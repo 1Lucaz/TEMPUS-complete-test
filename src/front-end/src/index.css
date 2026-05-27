@@ -1,0 +1,31 @@
+:root {
+  --bg-dark: #0a0f1d;
+  --bg-card: #161e31;
+  --electric-blue: #00d2ff;
+  --text-white: #ffffff;
+  --text-gray: #94a3b8;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg-dark);
+  color: var(--text-white);
+  font-family: 'Inter', sans-serif;
+}
+
+button {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.card-futurista {
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+              box-shadow 0.3s ease, 
+              border-color 0.3s ease;
+}
+
+.card-futurista:hover {
+  transform: scale(1.05); 
+  border-color: #00d2ff !important; 
+  box-shadow: 0 0 20px rgba(0, 210, 255, 0.4); 
+}

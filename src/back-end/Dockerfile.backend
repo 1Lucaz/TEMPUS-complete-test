@@ -1,0 +1,44 @@
+# ── Build stage ──────────────────────────────────────────────────────────────
+FROM python:3.12-slim AS builder
+
+WORKDIR /app
+
+# Dependências do sistema necessárias para psycopg3 (libpq)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq-dev \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Instala Poetry sem criar virtualenv (o container já é isolado)
+ENV POETRY_VERSION=1.8.2 \
+    POETRY_HOME="/opt/poetry" \
+    POETRY_VIRTUALENVS_CREATE=false \
+    POETRY_NO_INTERACTION=1
+
+RUN pip install --no-cache-dir "poetry==$POETRY_VERSION"
+
+# Copia apenas os arquivos de dependência primeiro (cache de camadas)
+COPY pyproject.toml poetry.lock* ./
+
+RUN poetry install --without dev
+
+# ── Runtime stage ─────────────────────────────────────────────────────────────
+FROM python:3.12-slim AS runtime
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copia pacotes instalados do stage anterior
+COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+# Copia o código fonte
+COPY . .
+
+# Roda as migrations do Alembic antes de subir a aplicação
+# (pode ser movido para um entrypoint.sh se preferir controle manual)
+CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"]

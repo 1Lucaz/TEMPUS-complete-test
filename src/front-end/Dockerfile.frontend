@@ -1,0 +1,21 @@
+# ── Build stage ──────────────────────────────────────────────────────────────
+FROM node:20-slim AS builder
+
+WORKDIR /app
+
+COPY package.json package-lock.json* yarn.lock* pnpm-lock.yaml* ./
+
+# Instala dependências (suporte a npm, yarn ou pnpm)
+RUN if [ -f yarn.lock ]; then yarn install --frozen-lockfile; \
+    elif [ -f pnpm-lock.yaml ]; then corepack enable && pnpm install --frozen-lockfile; \
+    else npm ci; fi
+
+COPY . .
+
+# ── Dev stage (usado pelo docker-compose em desenvolvimento) ──────────────────
+FROM builder AS dev
+
+EXPOSE 5173
+
+# Permite acesso externo ao servidor de dev do Vite
+CMD ["npx", "vite", "--host", "0.0.0.0", "--port", "5173"]

@@ -1,0 +1,159 @@
+:root {
+  --primary: #0066ff;
+  --primary-dark: #0052cc;
+  --secondary: #22c55e;
+  --text: #1e293b;
+}
+
+.login-split-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+  margin-top: 80px;
+}
+
+.login-split-container {
+  display: flex;
+  width: 100%;
+  max-width: 1000px;
+  min-height: 550px;
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+}
+
+.panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  transition: all 0.4s ease;
+  cursor: pointer;
+}
+
+.panel-info {
+  text-align: center;
+  color: white;
+  z-index: 2;
+  transition: all 0.4s ease;
+}
+
+.panel .icon {
+  font-size: 50px;
+  margin-bottom: 12px;
+  transition: all 0.4s ease;
+}
+
+.panel h2 {
+  font-size: 22px;
+  transition: all 0.4s ease;
+}
+
+.panel span {
+  font-size: 13px;
+  opacity: 0.85;
+  transition: all 0.4s ease;
+}
+
+.panel.client {
+  background: linear-gradient(135deg, #0066ff, #3b82f6);
+}
+
+.panel.employee {
+  background: linear-gradient(135deg, #0066ff, #0052cc);
+}
+
+.form-area {
+  position: absolute;
+  inset: 0;
+  background: white;
+  padding: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transform: translateY(100%);
+  transition: all 0.5s ease;
+}
+
+.panel.active .form-area {
+  transform: translateY(0);
+}
+
+.panel.active {
+  flex: 1.3;
+  cursor: default;
+}
+
+.panel.active .panel-info {
+  position: absolute;
+  top: 20px;
+  left: 0;
+  width: 100%;
+  opacity: 0.9;
+}
+
+.panel.active .icon {
+  font-size: 30px;
+  margin-bottom: 5px;
+}
+
+.panel.active h2 {
+  font-size: 16px;
+}
+
+.panel.active span {
+  display: none;
+}
+
+.form-area h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: var(--text);
+}
+
+.btn-submit {
+  margin-top: 20px;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.client-btn {
+  background: var(--primary);
+}
+
+.employee-btn {
+  background: var(--primary-dark);
+}
+
+.btn-submit:hover {
+  transform: translateY(-1px);
+  opacity: 0.9;
+}
+
+.btn-submit:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+@media (max-width: 900px) {
+  .login-split-container {
+    flex-direction: column;
+  }
+
+  .panel {
+    height: 250px;
+  }
+
+  .form-area {
+    position: relative;
+    transform: none;
+  }
+}

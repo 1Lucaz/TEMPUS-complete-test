@@ -1,0 +1,32 @@
+.input-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.input-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.input-element {
+  width: 100%;
+  padding: 14px 18px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: var(--text-dark);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-element:focus {
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 4px var(--secondary-blue);
+  outline: none;
+}
+
+.input-element::placeholder {
+  color: var(--text-gray);
+}

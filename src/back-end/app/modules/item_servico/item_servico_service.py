@@ -1,0 +1,82 @@
+from typing import Sequence
+
+from app.modules.categoria.categoria_repository import CategoriaRepository
+from app.modules.funcionario.funcionario_schema import FuncionarioResponse
+from app.modules.cliente.cliente_schema import ClienteResponse
+from app.modules.item_servico.item_servico_model import ItemServico
+from app.modules.item_servico.item_servico_repository import ItemServicoRepository
+from app.modules.item_servico.item_servico_schema import ItemCreate, ItemUpdate, ItemInput
+from app.modules.utils.app_exception import Unauthorized, NotFound, BadRequest
+
+
+class ItemServicoService:
+    def __init__(self, repository: ItemServicoRepository, categoria_repository: CategoriaRepository):
+        self.repository = repository
+        self.categoria_repository = categoria_repository
+
+    def buscar_varios(self,
+                      dados: ItemInput,
+                      usuario: FuncionarioResponse | ClienteResponse) -> Sequence[ItemServico]:
+        if isinstance(usuario, FuncionarioResponse):
+            if not usuario.access_item_servico:
+                raise Unauthorized(causa="Acesso negado aos itens de serviço")
+
+            return self.repository.buscar_varios(categoria_id=dados.categoria_servico.id,
+                                                 ativo=dados.ativo)
+
+        return self.repository.buscar_varios(categoria_id=dados.categoria_servico.id,
+                                             ativo=True)
+
+    def buscar_todos(self, usuario: FuncionarioResponse | ClienteResponse) -> Sequence[ItemServico]:
+        if isinstance(usuario, ClienteResponse) or not usuario.access_item_servico:
+            raise Unauthorized(causa="Acesso restrito a funcionários autorizados")
+        return self.repository.buscar_todos()
+
+    def buscar_por_id(self, id: int, usuario: FuncionarioResponse | ClienteResponse) -> ItemServico:
+        if isinstance(usuario, FuncionarioResponse):
+            if not usuario.access_item_servico:
+                raise Unauthorized(causa="Acesso negado")
+            item = self.repository.buscar_por_id(id)
+        else:
+            item = self.repository.buscar_um(id=id)
+
+        if not item:
+            raise NotFound(causa="Item não encontrado ou acesso negado")
+        return item
+
+    def criar_item(self, dados: ItemCreate, usuario: FuncionarioResponse) -> ItemServico:
+        if not usuario.access_item_servico:
+            raise Unauthorized(causa="SEM PERMISSÃO PLAYBOYYY")
+
+        categoria = self.categoria_repository.buscar_uma_categoria(ItemCreate.categoria_servico.id)
+
+        if not categoria:
+            raise NotFound (causa = "Categoria não existe, você deve criá-la ou usar uma existente")
+
+        return self.repository.registrar_item(ItemServico(
+            categoria_id=dados.categoria_id,
+            ativo=dados.ativo,
+            descricao=dados.descricao
+        ))
+
+    def atualizar_item(self, id: int, dados_novos: ItemUpdate, usuario: FuncionarioResponse) -> ItemServico:
+        if not usuario.access_item_servico:
+            raise Unauthorized(causa="Permissão insuficiente")
+
+        payload = dados_novos.model_dump(exclude_none=True)
+        if not payload:
+            raise BadRequest(causa="Dados ausentes")
+
+        item = self.repository.atualizar_item(id, payload)
+        if not item:
+            raise NotFound(causa="Item inexistente")
+        return item
+
+    def desativar_item(self, id: int, usuario: FuncionarioResponse) -> ItemServico:
+        if not usuario.access_item_servico or not isinstance(usuario, FuncionarioResponse):
+            raise Unauthorized(causa="Permissão insuficiente")
+        item = self.repository.buscar_um(id)
+        if not item:
+            raise NotFound(causa="Item inexistente")
+        else:
+            return self.repository.desativar_item(item.id)
