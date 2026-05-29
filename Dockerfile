@@ -41,7 +41,7 @@ RUN pip install --no-cache-dir "poetry==$POETRY_VERSION"
 
 COPY src/back-end/pyproject.toml src/back-end/poetry.lock ./
 
-RUN poetry install
+RUN poetry install --no-root
 
 
 # =============================================================================
