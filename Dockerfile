@@ -32,9 +32,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
-ENV POETRY_VERSION=1.8.2 \
-    POETRY_HOME="/opt/poetry" \
-    POETRY_VIRTUALENVS_CREATE=false \
+ENV POETRY_VERSION=1.8.2
+    POETRY_HOME="/opt/poetry"
+    POETRY_VIRTUALENVS_CREATE=false
     POETRY_NO_INTERACTION=1
 
 RUN pip install --no-cache-dir "poetry==$POETRY_VERSION"
