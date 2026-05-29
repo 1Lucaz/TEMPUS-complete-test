@@ -30,6 +30,7 @@ services:
       - .env
     ports:
       - "5173:5173"
+      - "3000:3000"
     volumes:
       - ./src/front-end:/app
       - /app/node_modules        # evita sobrescrever node_modules do container
