@@ -1,7 +1,7 @@
 services:
   backend:
     build:
-      context: ./src/back-end
+      context: back-end
       dockerfile: Dockerfile
     container_name: app_backend
     restart: unless-stopped
@@ -22,7 +22,7 @@ services:
 
   frontend:
     build:
-      context: ./src/front-end
+      context: front-end
       dockerfile: Dockerfile
     container_name: app_frontend
     restart: unless-stopped

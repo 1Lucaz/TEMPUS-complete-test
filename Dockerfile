@@ -5,7 +5,7 @@ FROM node:20-slim AS frontend-builder
 
 WORKDIR /build
 
-COPY front-end/package.json \
+COPY src/front-end/package.json \
      front-end/package-lock.json* \
      front-end/yarn.lock* \
      front-end/pnpm-lock.yaml* \
@@ -15,7 +15,7 @@ RUN if [ -f yarn.lock ]; then yarn install --frozen-lockfile; \
     elif [ -f pnpm-lock.yaml ]; then corepack enable && pnpm install --frozen-lockfile; \
     else npm ci; fi
 
-COPY front-end/ .
+COPY src/front-end .
 
 # Em produção o frontend faz chamadas relativas (/api/...) via nginx.
 # Sobrescreva com --build-arg se precisar de URL absoluta.
@@ -45,7 +45,7 @@ ENV POETRY_VERSION=1.8.2 \
 
 RUN pip install --no-cache-dir "poetry==$POETRY_VERSION"
 
-COPY back-end/pyproject.toml back-end/poetry.lock* ./
+COPY src/back-end/pyproject.toml back-end/poetry.lock* ./
 
 RUN poetry install
 
@@ -74,15 +74,15 @@ COPY --from=backend-builder \
 COPY --from=backend-builder /usr/local/bin /usr/local/bin
 
 # ── Código do backend ────────────────────────────────────────────────────────
-COPY back-end/ ./back-end/
+COPY src/back-end ./back-end/
 
 # ── Frontend buildado → nginx ─────────────────────────────────────────────────
 COPY --from=frontend-builder /build/dist /usr/share/nginx/html
 
 # ── Configs ──────────────────────────────────────────────────────────────────
-COPY nginx.conf       /etc/nginx/nginx.conf
-COPY supervisord.conf /etc/supervisor/conf.d/app.conf
-COPY entrypoint.sh    /entrypoint.sh
+COPY src/nginx.conf       /etc/nginx/nginx.conf
+COPY src/supervisord.conf /etc/supervisor/conf.d/app.conf
+COPY src/entrypoint.sh    /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 EXPOSE 80
