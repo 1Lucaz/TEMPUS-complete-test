@@ -1,7 +1,7 @@
 services:
   app:
     build:
-      context: ./src
+      context: .          # raiz do projeto (onde está o Dockerfile)
       dockerfile: Dockerfile
     container_name: fullstack_app
     restart: unless-stopped

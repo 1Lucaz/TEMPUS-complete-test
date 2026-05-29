@@ -5,20 +5,14 @@ FROM node:20-slim AS frontend-builder
 
 WORKDIR /build
 
-COPY src/front-end/package.json \
-     front-end/package-lock.json* \
-     front-end/yarn.lock* \
-     front-end/pnpm-lock.yaml* \
-     ./
+# Contexto = raiz do projeto → paths começam com src/front-end/
+COPY src/front-end/package.json src/front-end/package-lock.json ./
 
-RUN if [ -f yarn.lock ]; then yarn install --frozen-lockfile; \
-    elif [ -f pnpm-lock.yaml ]; then corepack enable && pnpm install --frozen-lockfile; \
-    else npm ci; fi
+RUN npm ci
 
-COPY src/front-end .
+COPY src/front-end/ .
 
-# Em produção o frontend faz chamadas relativas (/api/...) via nginx.
-# Sobrescreva com --build-arg se precisar de URL absoluta.
+# Em produção o frontend usa rotas relativas (/api/...) via nginx
 ARG VITE_API_URL=/api
 ENV VITE_API_URL=$VITE_API_URL
 
@@ -45,7 +39,7 @@ ENV POETRY_VERSION=1.8.2 \
 
 RUN pip install --no-cache-dir "poetry==$POETRY_VERSION"
 
-COPY src/back-end/pyproject.toml back-end/poetry.lock* ./
+COPY src/back-end/pyproject.toml src/back-end/poetry.lock ./
 
 RUN poetry install
 
@@ -57,8 +51,6 @@ FROM python:3.13 AS runtime
 
 WORKDIR /app
 
-# nginx    → serve o frontend estático e faz proxy das rotas /api
-# supervisor → gerencia nginx + uvicorn como processos filhos
 RUN apt-get update && apt-get install -y --no-install-recommends \
     nginx \
     supervisor \
@@ -69,17 +61,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # ── Python packages ──────────────────────────────────────────────────────────
 COPY --from=backend-builder \
-    /usr/local/lib/python3.13/site-packages \
-    /usr/local/lib/python3.13/site-packages
+    /usr/local/lib/python3.12/site-packages \
+    /usr/local/lib/python3.12/site-packages
 COPY --from=backend-builder /usr/local/bin /usr/local/bin
 
-# ── Código do backend ────────────────────────────────────────────────────────
-COPY src/back-end ./back-end/
+# ── Código do backend ─────────────────────────────────────────────────────────
+COPY src/back-end/ ./back-end/
 
 # ── Frontend buildado → nginx ─────────────────────────────────────────────────
 COPY --from=frontend-builder /build/dist /usr/share/nginx/html
 
-# ── Configs ──────────────────────────────────────────────────────────────────
+# ── Configs (todos em src/) ───────────────────────────────────────────────────
 COPY src/nginx.conf       /etc/nginx/nginx.conf
 COPY src/supervisord.conf /etc/supervisor/conf.d/app.conf
 COPY src/entrypoint.sh    /entrypoint.sh
