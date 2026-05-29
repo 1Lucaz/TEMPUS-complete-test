@@ -1,17 +1,44 @@
 services:
-  app:
+  backend:
     build:
-      context: ./src
+      context: ./src/back-end
       dockerfile: Dockerfile
-    container_name: fullstack_app
+    container_name: app_backend
     restart: unless-stopped
     env_file:
       - .env
     ports:
-      - "80:80"
+      - "8000:8000"
+    volumes:
+      - ./src/back-end:/app
+    networks:
+      - app_network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/api/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 20s
+      start_period: 10s
+
+  frontend:
+    build:
+      context: ./src/front-end
+      dockerfile: Dockerfile
+    container_name: app_frontend
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./src/front-end:/app
+      - /app/node_modules        # evita sobrescrever node_modules do container
+    networks:
+      - app_network
+    depends_on:
+      backend:
+        condition: service_healthy
+
+networks:
+  app_network:
+    driver: bridge
